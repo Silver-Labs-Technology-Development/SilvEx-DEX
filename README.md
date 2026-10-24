@@ -1,67 +1,109 @@
 # SilvEx DEX
 
-> **Status: Planned — repository and scope only.**
-> This repository contains no swap contracts, pools, router, quote engine, or
-> trading interface. No executable swap exists.
+Wallet-authorized decentralized exchange for the Silver Labs ecosystem.
+
+**Status: planned — scaffold only.** No swap UI, order builder, settlement
+contract, or wallet integration exists in this repository yet. SilvEx DEX is
+non-custodial: it never holds keys or funds.
 
 ## Purpose
 
-SilvEx DEX is the wallet-authorized, non-custodial exchange product boundary
-for Silver Labs. The intended model is that users keep control of their keys and
-authorize swaps from a wallet; the product does not take custody of user funds.
+Let a user trade assets from their own wallet. The application requests quotes,
+builds an order, asks the user's wallet to sign, and submits the signed
+transaction. Settlement happens on-chain; the user keeps custody throughout.
 
-SilvEx DEX is independent of SilvEx CEX. A centralized order book and an
-on-chain swap protocol have different custody, settlement, and risk models.
+## Scope
 
-## Proposed scope
+Planned work, in dependency order:
 
-- Selection of a supported chain and contract standard.
-- Pool discovery and on-chain state reads.
-- Route and quote construction with explicit slippage and failure semantics.
-- Wallet authorization and transaction submission through SilverPay.
-- Pre-trade checks, transaction status, and recovery guidance.
-- Contract and integration tests on a disposable local chain or testnet.
+1. **Wallet connection** — EIP-1193 connection, chain identity check, and
+   explicit account-change handling.
+2. **Quote client** — request routes and prices from `SilvEx-DEX-Node`, with
+   freshness and slippage limits displayed before signing.
+3. **Order builder** — deterministic order and swap payloads with token
+   approvals, deadlines, and recipient checks.
+4. **Signing and submission** — wallet-signed transactions only; no key
+   material in the app.
+5. **Settlement adapter** — call the reviewed on-chain settlement path and
+   report pending, confirmed, reverted, and unknown states honestly.
+6. **Swap UI** — token selection, amount entry, price impact, approval state,
+   review screen, and transaction history from the connected wallet.
+7. **Safety controls** — chain allowlist, token list, simulation or
+   preflight checks, and clear warnings for unaudited markets.
 
-## Explicitly out of scope until reviewed and approved
+## Out of scope
 
-- Real-value swaps or liquidity incentives.
-- Unreviewed contracts or unaudited upgrades.
-- Cross-chain transfers or bridges.
-- Any claim of guaranteed liquidity, price, or execution.
-- Treating a quote as a promise or a simulated transaction as a settlement.
+- Custody, account balances, or an operator-held order book.
+- Private-key generation, import, or storage.
+- Centralized-exchange accounts and fiat on-ramps (that is `SilvEx-CEX`).
+- Indexing and routing infrastructure (that is `SilvEx-DEX-Node`).
+- Real-value trading before contract audit and legal review.
+
+## Planned components
+
+| Component | Responsibility |
+| --- | --- |
+| `web/` | Swap interface and review flow |
+| `wallet/` | EIP-1193 adapter and chain checks |
+| `quotes/` | Quote client with freshness rules |
+| `orders/` | Order and approval payload builders |
+| `settlement/` | On-chain settlement adapter |
+| `config/` | Chain, token, and market allowlists |
+
+The directory names are proposed. They are not created yet.
 
 ## Integration points
 
-- **SilverPay** — wallet connection, account selection, and signing boundary.
-- **SilvEx DEX Node** — indexing, routing, and quote services when justified by
-  the selected architecture.
-- **BTCS L2** — candidate execution environment for contracts and settlement.
-- **BTCS Core** — L1 asset and deposit/withdrawal context where relevant.
-- **Silver Scan** — transaction and pool visibility.
-- **silver-labs-platform** — shared schemas and read-only client contracts.
+- [SilvEx-DEX-Node](https://github.com/Silver-Labs-Technology-Development/SilvEx-DEX-Node)
+  — quotes, routes, and indexed market data.
+- [SilverPay](https://github.com/Silver-Labs-Technology-Development/SilverPay)
+  — optional wallet entry point and shared wallet conventions.
+- [btcs-l2](https://github.com/Silver-Labs-Technology-Development/btcs-l2)
+  — EVM execution and the settlement contracts, once reviewed.
+- [SilverForge-Studio](https://github.com/Silver-Labs-Technology-Development/SilverForge-Studio)
+  — token metadata and contract links.
+- [silver-labs-platform](https://github.com/Silver-Labs-Technology-Development/silver-labs-platform)
+  — shared client and schema conventions.
 
-## Decisions required before implementation
+## Local development
 
-1. Supported chain(s) and the exact contract standard.
-2. AMM, order-book, or hybrid design, with a written rationale.
-3. Pool creation, fee, slippage, and MEV/front-running assumptions.
-4. Upgradeability, admin-key, and emergency-stop policy.
-5. Independent contract review and a reproducible testnet swap.
+There is no runnable code yet. Future development must use a disposable local
+BTCS L2 node, test tokens, and a test wallet. No mainnet keys or real-value
+assets may be used.
 
-## First milestone
+## Safety and release status
 
-A reviewed design plus a reproducible swap on a disposable local chain or
-public testnet, using test assets and a wallet-authorized signature. No
-real-value trading.
+This is a development scaffold, not a live exchange. Decentralized trading
+still carries contract, approval, slippage, and front-running risk. Before any
+real-value use:
 
-## Repository facts
+- Independent audit of the settlement contracts and order format.
+- A reviewed token list and market-creation policy.
+- Explicit slippage, deadline, and price-impact limits.
+- A tested failure path for rejected signatures, reverts, and stale quotes.
 
-- Local workspace path: `~/Silver-Labs/SilvEx-DEX`
-- Default branch: `main`
-- Implementation: none
-- Tests run: none (no code)
-- License: no license selected; no reuse rights are granted
-- Visibility: public planning repository
+See [`SECURITY.md`](SECURITY.md).
 
-This repository is labeled planned so that its existence is not mistaken for a
-working exchange.
+## Repository layout
+
+```text
+.
+├── README.md
+├── LICENSE
+├── SECURITY.md
+├── .gitignore
+└── docs/
+    └── ARCHITECTURE.md
+```
+
+## License
+
+No open-source license is granted. See [`LICENSE`](LICENSE). The repository is
+public for review and development, not for reuse or redistribution.
+
+## Related repositories
+
+- [SilvEx DEX Node](https://github.com/Silver-Labs-Technology-Development/SilvEx-DEX-Node)
+- [SilvEx CEX](https://github.com/Silver-Labs-Technology-Development/SilvEx-CEX)
+- [SilverPay](https://github.com/Silver-Labs-Technology-Development/SilverPay)
+- [Silver Labs workspace](https://github.com/orgs/Silver-Labs-Technology-Development/repositories)
